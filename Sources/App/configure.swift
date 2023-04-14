@@ -15,7 +15,7 @@ public func configure(_ app: Application) throws {
         database: Environment.get("DATABASE_NAME") ?? "coingecko_database"
     ), as: .psql)
 
-    
+    app.migrations.add(CreateUser())
     
     try app.autoMigrate().wait()
 

@@ -12,6 +12,7 @@ struct WalletsController: RouteCollection {
     func boot(routes: Vapor.RoutesBuilder) throws {
         let walletsGroup = routes.grouped("wallets")
         walletsGroup.post(use: createHandler)
+        walletsGroup.get(use: getAllHandler)
         walletsGroup.get(":userId", use: getHandler)
     }
     
@@ -20,9 +21,14 @@ struct WalletsController: RouteCollection {
         try await wallet.save(on: request.db)
         return wallet
     }
+    
+    func getAllHandler(_ request: Request) async throws -> [Wallet] {
+        try await Wallet.query(on: request.db).all()
+    }
 
     func getHandler(_ request: Request) async throws -> [Wallet] {
-        guard let userIdString = request.parameters.get("userId"), let userId = UUID(uuidString: userIdString) else {
+        guard let userIdString = request.parameters.get("userId"),
+              let userId = UUID(uuidString: userIdString) else {
             return []
         }
         return try await Wallet

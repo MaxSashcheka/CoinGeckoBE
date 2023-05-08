@@ -13,10 +13,8 @@ struct PostsController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let postsGroup = routes.grouped("posts")
         postsGroup.post(use: createHandler)
-        postsGroup.get(use: getAllHandler)
-        postsGroup.get(":userId", use: getByAuthorIdHandler)
-        let moreGroyp = routes.grouped("posts/authorId")
-        moreGroyp.get(":userId", use: getByIdHandler)
+        postsGroup.get(use: getHandler)
+        postsGroup.delete(":postId", use: deleteHandler)
     }
     
     func createHandler(_ request: Request) async throws -> Post {
@@ -25,8 +23,36 @@ struct PostsController: RouteCollection {
         return post
     }
     
-    func getAllHandler(_ request: Request) async throws -> [Post] {
-        try await Post.query(on: request.db).all()
+    func deleteHandler(_ request: Request) async throws -> Post {
+        guard let post = try await Post.find(request.parameters.get("postId"), on: request.db) else {
+            throw Abort(.notFound)
+        }
+        try await post.delete(on: request.db)
+        return post
+    }
+    
+    func getHandler(_ request: Request) async throws -> [Post] {
+        let queryContent = try request.query.decode(PostQueryContent.self)
+        
+        if let authorIdString = queryContent.authorId {
+            if let authorId = UUID(uuidString: authorIdString) {
+                return try await Post
+                    .query(on: request.db)
+                    .filter(\.$authorId == authorId)
+                    .all()
+            }
+        }
+        
+        if let postIdString = queryContent.postId {
+            if let postId = UUID(uuidString: postIdString) {
+                return try await Post
+                    .query(on: request.db)
+                    .filter(\.$id == postId)
+                    .all()
+            }
+        }
+        
+        return try await Post.query(on: request.db).all()
     }
     
     func getByAuthorIdHandler(_ request: Request) async throws -> [Post] {
@@ -47,4 +73,9 @@ struct PostsController: RouteCollection {
         }
         return post
     }
+}
+
+final class PostQueryContent: Content {
+    var authorId: String?
+    var postId: String?
 }

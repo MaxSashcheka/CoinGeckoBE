@@ -27,7 +27,4 @@ final class Post: Model, Content {
     var imageURL: String
 }
 
-final class TestContent: Content {
-    var name: String
-    var author: String
-}
+

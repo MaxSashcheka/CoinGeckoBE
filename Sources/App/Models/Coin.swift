@@ -19,4 +19,7 @@ final class Coin: Model, Content {
     
     @Field(key: "identifier")
     var identifier: String
+    
+    @Field(key: "amount")
+    var amount: Float
 }

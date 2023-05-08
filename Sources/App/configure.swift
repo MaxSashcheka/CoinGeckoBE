@@ -19,9 +19,8 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateCoin())
     app.migrations.add(CreateWallet())
     app.migrations.add(CreateUser())
-    
+
     try app.autoMigrate().wait()
 
-    // register routes
     try routes(app)
 }

@@ -14,6 +14,7 @@ struct CreateCoin: AsyncMigration {
             .id()
             .field("wallet_id", .uuid, .required)
             .field("identifier", .string, .required)
+            .field("amount", .float, .required)
         
         try await schema.create()
     }
